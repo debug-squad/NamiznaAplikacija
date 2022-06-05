@@ -18,8 +18,10 @@ import androidx.compose.ui.window.singleWindowApplication
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.input.*
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import data.Event
@@ -53,7 +55,9 @@ fun App() {
                         OutlinedTextField(
                             value = password,
                             onValueChange = { password = it },
-                            label = { Text("Geslo") }
+                            label = { Text("Geslo") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            visualTransformation = PasswordVisualTransformation('*')
                         )
                         if (error != null) Text("Error: $error")
                         Button(
@@ -91,16 +95,16 @@ fun App() {
         fun setValues(event: Event?) {
             title = event?.title ?: ""
             description = event?.description ?: ""
-            date_start = event?.date_start ?: ""
+            date_start = event?.date_start ?: "2022-06-05T13:37:09.376Z"
             date_end = event?.date_end ?: ""
-            latitude = (event?.location as? Location)?.coordinates?.get(0)?.toString() ?: ""
-            longitude = (event?.location as? Location)?.coordinates?.get(1)?.toString() ?: ""
+            latitude = (event?.location as? Location)?.coordinates?.get(0)?.toString() ?: "46.50735"
+            longitude = (event?.location as? Location)?.coordinates?.get(1)?.toString() ?: "15.63816"
             organization = event?.organization ?: ""
             contact = event?.contact ?: ""
             price = event?.price ?: ""
             tags = event?.tags?.joinToString(",") ?: ""
             site_url = event?.site_url ?: ""
-            image_url = event?.image_url ?: ""
+            image_url = event?.image_url ?: "https://www.visitmaribor.si/media/9867/dogodek-botanicni-vrt3.jpg?anchor=center&mode=crop&width=640&height=480&quality=95"
         }
 
         fun toEventAdd(): EventAdd? {
