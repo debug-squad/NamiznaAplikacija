@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.6.10"
     id("org.jetbrains.compose") version "1.1.0"
+    kotlin("plugin.serialization") version "1.6.21"
 }
 
 group = "org.example"
@@ -18,6 +19,9 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    implementation("com.github.kittinunf.fuel:fuel:2.3.1")
+    implementation("com.github.kittinunf.fuel:fuel-json:2.3.1")
 }
 
 tasks.withType<KotlinCompile> {
