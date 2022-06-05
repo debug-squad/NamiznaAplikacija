@@ -30,6 +30,10 @@ import data.Location
 @Composable
 fun App() {
     MaterialTheme {
+        var events by remember { mutableStateOf<List<Event>?>(null) }
+        var currentEvent by remember { mutableStateOf<Event?>(null) }
+        var currentIndex by remember { mutableStateOf<Int?>(null) }
+
         var error by remember { mutableStateOf<String?>(null) }
 
         var title by remember { mutableStateOf("") }
@@ -86,6 +90,31 @@ fun App() {
             )
         }
 
+        fun getCurrentEvent(): Event? {
+            if (currentEvent != null) {
+                var add = toEventAdd() ?: return null
+                currentEvent = Event(
+                    title = add.title,
+                    description = add.description,
+                    date_start = add.date_start,
+                    date_end = add.date_end,
+                    location = add.location,
+                    organization = add.organization,
+                    contact = add.contact,
+                    price = add.price,
+                    tags = add.tags,
+                    site_url = add.site_url,
+                    image_url = add.image_url,
+
+                    attendace = currentEvent!!.attendace,
+                    _id = currentEvent!!._id,
+                    created = currentEvent!!.created,
+                    modified = currentEvent!!.modified,
+                )
+            }
+            return currentEvent
+        }
+
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(
@@ -93,6 +122,7 @@ fun App() {
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    if (currentEvent != null) Text("Id: ${currentEvent?._id}")
                     OutlinedTextField(
                         value = title,
                         onValueChange = { title = it },
@@ -155,30 +185,104 @@ fun App() {
                     )
                     if (error != null) Text("Error: $error")
 
-
-                    Button(
-                        onClick = {
-                            error = null
-                            val event = toEventAdd()
-                            if (event != null) {
-                                val event = Api.addEvent(event)
-                                if (event == null) {
-                                    error = "Napaka pri vstavljanju"
+                    if (currentEvent != null) {
+                        Button(
+                            onClick = {
+                                error = null
+                                if (currentEvent != null) if (!Api.updateEvent(getCurrentEvent()!!)) error =
+                                    "Napaka pri posodabljanju"
+                            },
+                        ) {
+                            Text("Shrani")
+                        }
+                    } else {
+                        Button(
+                            onClick = {
+                                error = null
+                                val event = toEventAdd()
+                                if(event != null) {
+                                    val event = Api.addEvent(event)
+                                    if(event == null) {
+                                        error = "Napaka pri vstavljanju"
+                                    } else {
+                                        events = listOf(event) + (events ?: listOf())
+                                        currentEvent = event
+                                        currentIndex = 0
+                                    }
                                 }
+                            }) {
+                            Text("Kreiraj")
+                        }
+                    }
+                    Row {
+                        Button(
+                            onClick = {
+                                error = null
+                                currentEvent = null
+                                currentIndex = null
+                                setValues(null)
+                            }) {
+                            Text("Resetiraj")
+                        }
+                        if (currentEvent != null) {
+                            Button(
+                                onClick = {
+                                    error = null
+                                    setValues(currentEvent)
+                                    currentEvent = null
+                                    currentIndex = null
+                                }) {
+                                Text("Podvoji")
                             }
-                        }) {
-                        Text("Kreiraj")
+                        }
                     }
 
                     Row {
                         Button(
                             onClick = {
                                 error = null
-                                setValues(null)
-                            }) {
-                            Text("Resetiraj")
+                                if (events == null) events = Api.getEvents()!!
+                                if (events == null) error = "Napaka pri pridobivanju dogodkov"
+                                currentIndex =
+                                    if (currentIndex == null || currentIndex!! == 0) 0 else currentIndex!! - 1
+                                if (events != null) currentEvent = events!![currentIndex!!]
+                                if (currentEvent != null) setValues(currentEvent!!)
+                            },
+                            enabled = currentIndex != null && events != null && currentIndex!! > 0
+                        ) {
+                            Text("Nazaj ")
                         }
+                        Button(
+                            onClick = {
+                                error = null
+                                events = Api.getEvents()!!
+                                if (events == null) error = "Napaka pri pridobivanju dogodkov"
+                                val event_pair = if (events != null) events!!.withIndex()
+                                    .find { it.value._id == currentEvent?._id } else null
+                                currentIndex = event_pair?.index
+                                currentEvent = event_pair?.value
+                                if (currentEvent != null) setValues(currentEvent!!)
+                                if (currentEvent != null) Api.updateEvent(currentEvent!!)
+                            },
+                        ) {
+                            Text("Osveži")
+                        }
+                        Button(
+                            onClick = {
+                                error = null
+                                if (events == null) events = Api.getEvents()!!
+                                if (events == null) error = "Napaka pri pridobivanju dogodkov"
+                                currentIndex = if (currentIndex == null) 0 else currentIndex!! + 1
+                                if (events != null) currentEvent = events!![currentIndex!!]
+                                if (currentEvent != null) setValues(currentEvent!!)
+                            },
+                            enabled = events == null || currentIndex == null || currentIndex!! < events!!.size - 1
+                        ) {
+                            Text("Naslednji")
+                        }
+
                     }
+
                 }
             }
         }
