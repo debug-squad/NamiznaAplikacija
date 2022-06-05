@@ -9,7 +9,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 
 object Api {
-    var token: String? = login("test123", "test123")
+    var token: String? = null
 
     fun login(username: String, password: String): String? {
         val (_, _, result) = Fuel.post(
@@ -17,7 +17,7 @@ object Api {
             listOf("client_name" to username, "password" to password)
         ).responseString()
         return if (result is Result.Success) {
-            token = Json { ignoreUnknownKeys = true }.decodeFromString<Response<Login>>(result.get()).data.token
+            token =  try {Json { ignoreUnknownKeys = true }.decodeFromString<Response<Login>>(result.get()).data.token }catch (e: Exception) { null }
             token
         } else {
             println("login: ${result.get()}")

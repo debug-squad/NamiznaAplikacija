@@ -30,11 +30,50 @@ import data.Location
 @Composable
 fun App() {
     MaterialTheme {
+        var token by remember { mutableStateOf<String?>(null) }
+        var error by remember { mutableStateOf<String?>(null) }
+
+        if(token == null) {
+            var username by remember { mutableStateOf("") }
+            var password by remember { mutableStateOf("") }
+
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("Login")
+                        OutlinedTextField(
+                            value = username,
+                            onValueChange = { username = it },
+                            label = { Text("Uporabniško ime") }
+                        )
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text("Geslo") }
+                        )
+                        if (error != null) Text("Error: $error")
+                        Button(
+                            onClick = {
+                                error = null
+                                token = Api.login(username, password)
+                                if(token == null) error = "Napaka pri prijavi"
+                            }) {
+                            Text("Prijava")
+                        }
+                    }
+
+                }
+            }
+            return@MaterialTheme;
+        }
+
         var events by remember { mutableStateOf<List<Event>?>(null) }
         var currentEvent by remember { mutableStateOf<Event?>(null) }
         var currentIndex by remember { mutableStateOf<Int?>(null) }
-
-        var error by remember { mutableStateOf<String?>(null) }
 
         var title by remember { mutableStateOf("") }
         var description by remember { mutableStateOf("") }
